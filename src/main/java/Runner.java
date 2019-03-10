@@ -1,3 +1,5 @@
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -21,6 +23,9 @@ import static java.nio.file.StandardOpenOption.*;
 @Command(description = "Calculates some intraday stats",
         name = "intraday-stats", mixinStandardHelpOptions = true, version = "0.1")
 public class Runner implements Callable<Void> {
+
+
+    private static final Logger logger = LogManager.getLogger(Runner.class);
 
     @Option(names = {"-s", "--symbol"}, description = "EURUSD, AUDUSD ...")
     private String symbol;
@@ -46,6 +51,8 @@ public class Runner implements Callable<Void> {
     public Void call() throws Exception {
 
         TickMapper tickMapper = new TickMapper();
+
+        logger.info(String.format("Executing intraday stats with symbol: %s day: %d hour: %d", symbol, day, hour));
 
         completedAggregators = new ArrayList<>();
 
