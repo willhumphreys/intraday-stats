@@ -4,8 +4,8 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -24,8 +24,10 @@ import static java.nio.file.StandardOpenOption.*;
         name = "intraday-stats", mixinStandardHelpOptions = true, version = "0.1")
 public class Runner implements Callable<Void> {
 
-
     private static final Logger logger = LogManager.getLogger(Runner.class);
+
+    private static final String DATA_PATH = "data/%s.csv";
+    private static final String DATA_OUT_PATH = "results/data/%s-%s-%s.csv";
 
     @Option(names = {"-s", "--symbol"}, description = "EURUSD, AUDUSD ...")
     private String symbol;
@@ -35,7 +37,6 @@ public class Runner implements Callable<Void> {
 
     @Option(names = {"-d", "--day"}, description = "From 1 (Monday) to 7 (Sunday)")
     private int day;
-
 
     private int previous = 1000;
 
@@ -56,44 +57,27 @@ public class Runner implements Callable<Void> {
 
         completedAggregators = new ArrayList<>();
 
+        Path dataPath = Paths.get(String.format(DATA_PATH, symbol));
 
-        try (Stream<String> stream = Files.lines(Paths.get("data/" +
-                symbol))) {
+        try (Stream<String> stream = Files.lines(dataPath)) {
 
             stream.skip(1).map(tickMapper::map).filter(tick -> {
                 LocalDateTime currentTime = tick.getDateTime();
                 return currentTime.getDayOfWeek().equals(DayOfWeek.of(day)) && currentTime.getHour() == hour;
-
             }).forEach(tick -> {
-
                 int currentValue = tick.getDateTime().getMinute();
-
                 if (currentValue < this.previous) {
-
                     if (this.aggregator != null) {
                         completedAggregators.add(this.aggregator.close());
                     }
-
                     this.aggregator = new Aggregator(tick);
-
-
                 } else {
 
                     this.aggregator.add(tick);
-
-
                 }
-
                 previous = currentValue;
-
-
             });
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
 
         IntSummaryStatistics collect = completedAggregators.stream().collect(Collectors.summarizingInt(Integer::intValue));
 
@@ -104,7 +88,7 @@ public class Runner implements Callable<Void> {
 
 
         Stream<String> stringStream = frequencies.entrySet().stream().map((s) -> s.getKey() + "," + s.getValue());
-        Files.write(Paths.get(symbol),
+        Files.write(Paths.get(String.format(DATA_OUT_PATH, symbol, day, hour)),
                 (Iterable<String>) Stream.concat(Stream.of("range,frequency"), stringStream)::iterator,
                 CREATE, WRITE, TRUNCATE_EXISTING);
 
