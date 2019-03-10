@@ -1,3 +1,7 @@
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -7,26 +11,41 @@ import java.util.ArrayList;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.*;
 
-public class Runner {
+@Command(description = "Calculates some intraday stats",
+        name = "intraday-stats", mixinStandardHelpOptions = true, version = "0.1")
+public class Runner implements Callable<Void> {
+
+    @Option(names = {"-s", "--symbol"}, description = "EURUSD, AUDUSD ...")
+    private String symbol;
+
+    @Option(names = {"-o", "--hour"}, description = "From 0 to 23")
+    private int hour;
+
+    @Option(names = {"-d", "--day"}, description = "From 1 (Monday) to 7 (Sunday)")
+    private int day;
 
 
-    private final TickMapper tickMapper;
     private int previous = 1000;
 
     private Aggregator aggregator;
 
     private List<Integer> completedAggregators;
 
-    public Runner(String symbol) throws IOException {
+    public static void main(String[] args) {
+        CommandLine.call(new Runner(), args);
+    }
 
+    @Override
+    public Void call() throws Exception {
 
-        this.tickMapper = new TickMapper();
+        TickMapper tickMapper = new TickMapper();
 
         completedAggregators = new ArrayList<>();
 
@@ -34,15 +53,13 @@ public class Runner {
         try (Stream<String> stream = Files.lines(Paths.get("data/" +
                 symbol))) {
 
-            stream.skip(1).map(this.tickMapper::map).filter(tick -> {
+            stream.skip(1).map(tickMapper::map).filter(tick -> {
                 LocalDateTime currentTime = tick.getDateTime();
-                return currentTime.getDayOfWeek().equals(DayOfWeek.TUESDAY) && currentTime.getHour() == 20;
+                return currentTime.getDayOfWeek().equals(DayOfWeek.of(day)) && currentTime.getHour() == hour;
 
             }).forEach(tick -> {
 
-
                 int currentValue = tick.getDateTime().getMinute();
-                //System.out.println(tick.getDateTime() + " " + currentValue % 15);
 
                 if (currentValue < this.previous) {
 
@@ -86,15 +103,6 @@ public class Runner {
 
         System.out.println(frequencies);
 
-
+        return null;
     }
-
-    public static void main(String[] args) throws IOException {
-
-
-        new Runner("EURUSD.csv");
-
-
-    }
-
 }
