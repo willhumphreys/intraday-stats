@@ -1,4 +1,5 @@
 library('ggplot2')
+library(dplyr)
 
 options(warn = - 1, width = 150)
 print("Starting plotFrequency.r")
@@ -29,9 +30,19 @@ removeOutlier <- function(data, outliers) {
     return(as.data.frame(result))
 }
 
+dayName <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+dayLookup <- data.frame(dayName)
+
+dayOfWeek <- dayLookup$dayName[as.numeric(day)]
+
+print(paste('day is', day, 'day of week is', dayOfWeek))
+
+
 data.path = file.path('results', 'data', paste(input, '.csv', sep = ''))
 
 print(paste('Read csv data from directory', data.path))
+
+print(paste('Filtered on day', day, 'hour', hour))
 
 data <- read.table(data.path, header = T, sep = ",")
 
@@ -40,9 +51,12 @@ dataFixed <- removeOutlier(data, outliers)
 
 ggplot(data = dataFixed, aes(x = range, y = frequency)) +
     geom_bar(stat = "identity", fill = "steelblue") +
-    scale_fill_brewer(palette = "Reds") +
-    ggtitle(paste('Frequency against range for ', input, hour, day)) +
+    ggtitle(paste('Frequency against range for ', input, hour, dayOfWeek)) +
     theme_light()
 
-ggsave(file = file.path('results', 'graphs', paste(input, '-', day, '-', hour, '.png', sep = '')))
+outputLocation <- file.path('results', 'graphs', paste(input, '-', dayOfWeek, '-', hour, '.png', sep = ''))
+
+print(paste('Writing graph to ', outputLocation))
+
+ggsave(file = outputLocation)
 
