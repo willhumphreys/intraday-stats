@@ -1,6 +1,14 @@
 # intraday-stats
 Stats on intraday market data
 
+Currently this is hardcoded to just process a small subsection of EURUSD data
+
+# To run everything locally
+```bash
+./run_local.sh
+```
+
+
 # To execute intraday stats the arguments are
 
 `--hour 21 -d 2 -s EURUSD`
