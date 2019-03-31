@@ -7,7 +7,7 @@ print("Starting plotFrequency.r")
 
 args <- commandArgs(trailingOnly = TRUE)
 
-input = args[1]
+input = paste(args[1], '-', args[2], '-', args[3], '.csv', sep = '')
 day = args[2]
 hour = args[3]
 
@@ -42,7 +42,7 @@ hourOfDay <- timeLookup$timeName[as.numeric(hour)]
 print(paste('day is', day, 'day of week is', dayOfWeek))
 print(paste('hour is', hour, 'hour of day', hourOfDay))
 
-data.path = file.path('results', 'data', paste(input, '.csv', sep = ''))
+data.path = file.path('results', 'data', paste(input, sep = ''))
 
 print(paste('Read csv data from directory', data.path))
 

@@ -7,4 +7,14 @@ Stats on intraday market data
 
 # To execute the R graph part the arguments are
 
-`Rscript plotFrequency.r EURUSD 4 2`
+```bash
+Rscript plotFrequency.r EURUSD 4 2
+```
+
+## Docker
+
+To log in to the container. Swap out the container name
+
+```bash
+docker exec -it container_name /bin/bash
+```

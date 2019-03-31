@@ -1,30 +1,23 @@
 #!/usr/bin/env bash
-
-#!/usr/bin/env bash
 set -e
 
 echo "Download data"
 
 mkdir -p data
+mkdir -p results/data
+mkdir -p results/graphs
 
-aws s3 cp https://s3.amazonaws.com/mochi-data2/EURUSD.csv data
+aws s3 cp s3://mochi-data2/EURUSDShort.csv data/EURUSD.csv
 
 echo "Execute the stats"
 
-java -Dfile.encoding=UTF-8 -jar intraday-stats.jar
+java -Dfile.encoding=UTF-8 -jar intraday-stats.jar --hour 21 -d 2 -s EURUSD
 
 echo "Execute the R script"
 
-Rscript plotFrequency.r
+Rscript plotFrequency.r EURUSD 2 21
 
-now=$(date +%F_%T)
-
-aws s3 sync sentiment-plots s3://sentiment-plots/${now}
-aws s3 sync sentiment-csv s3://sentiment-plots/${now}
-
-aws s3 rm --recursive s3://sentiment-plots/current
-
-aws s3 sync sentiment-plots s3://sentiment-plots/current
-aws s3 sync sentiment-csv/* s3://sentiment-plots/current
+aws s3 rm --recursive s3://intraday-plots/current/EURUSD
+aws s3 sync results s3://intraday-plots/current/EURUSD
 
 exit 0

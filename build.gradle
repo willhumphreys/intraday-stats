@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.1"
+    }
+}
+
 plugins {
     id 'java'
 }
@@ -21,15 +31,7 @@ repositories {
 
 apply plugin: "com.github.johnrengelman.shadow"
 
-buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
-    dependencies {
-        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.1"
-    }
-}
+
 
 jar {
     manifest {
