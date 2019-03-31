@@ -1,4 +1,11 @@
+package uk.co.threebugs.intradaystats;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Aggregator {
+
+    private static final Logger logger = LogManager.getLogger(Aggregator.class);
 
     private int lowestLow = 1000000;
 
@@ -25,9 +32,9 @@ public class Aggregator {
 
     public int close() {
 
-        int abs = Math.abs(highestHigh - lowestLow);
+        int absoluteRange = Math.abs(highestHigh - lowestLow);
 
-        System.out.println(abs);
-        return abs;
+        logger.info(absoluteRange);
+        return absoluteRange;
     }
 }

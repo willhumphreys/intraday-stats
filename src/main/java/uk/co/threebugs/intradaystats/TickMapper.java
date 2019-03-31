@@ -1,3 +1,5 @@
+package uk.co.threebugs.intradaystats;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 

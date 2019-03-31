@@ -1,3 +1,5 @@
+package uk.co.threebugs.intradaystats;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
@@ -21,7 +23,7 @@ import java.util.stream.Stream;
 import static java.nio.file.StandardOpenOption.*;
 
 @Command(description = "Calculates some intraday stats",
-        name = "intraday-stats", mixinStandardHelpOptions = true, version = "0.1")
+        name = "intraday-stats", mixinStandardHelpOptions = true, version = "1.0")
 public class Runner implements Callable<Void> {
 
     private static final Logger logger = LogManager.getLogger(Runner.class);
@@ -79,20 +81,23 @@ public class Runner implements Callable<Void> {
             });
         }
 
-        IntSummaryStatistics collect = completedAggregators.stream().collect(Collectors.summarizingInt(Integer::intValue));
+        IntSummaryStatistics stats = completedAggregators.stream().collect(Collectors.summarizingInt(Integer::intValue));
 
-        System.out.println(collect);
+        logger.info(stats);
 
         Map<Integer, Long> frequencies = completedAggregators.stream().
                 collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-
         Stream<String> stringStream = frequencies.entrySet().stream().map((s) -> s.getKey() + "," + s.getValue());
-        Files.write(Paths.get(String.format(DATA_OUT_PATH, symbol, day, hour)),
+
+
+        Path outputPath = Paths.get(String.format(DATA_OUT_PATH, symbol, day, hour));
+
+        logger.info(String.format("Writing file to %s", outputPath));
+
+        Files.write(outputPath,
                 (Iterable<String>) Stream.concat(Stream.of("range,frequency"), stringStream)::iterator,
                 CREATE, WRITE, TRUNCATE_EXISTING);
-
-        System.out.println(frequencies);
 
         return null;
     }
